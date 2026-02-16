@@ -3,8 +3,13 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const mongoose = require('mongoose');
+
 exports.register = async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(500).json({ msg: 'Database not connected. Please check MONGO_URI.' });
+        }
         const { name, email, password } = req.body;
         let user = await User.findOne({ email });
         if (user) {
@@ -26,13 +31,16 @@ exports.register = async (req, res) => {
             res.json({ token });
         });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Registration Error:', err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
 exports.login = async (req, res) => {
     try {
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(500).json({ msg: 'Database not connected. Please check MONGO_URI.' });
+        }
         const { email, password } = req.body;
         let user = await User.findOne({ email });
         if (!user) {
@@ -54,8 +62,8 @@ exports.login = async (req, res) => {
             res.json({ token });
         });
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error('Login Error:', err.message);
+        res.status(500).json({ msg: 'Server Error', error: err.message });
     }
 };
 
