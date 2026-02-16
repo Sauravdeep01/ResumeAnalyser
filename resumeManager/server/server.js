@@ -1,8 +1,15 @@
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+
+// Polyfills for PDF parsing on serverless environments
+if (typeof global.DOMMatrix === 'undefined') {
+    global.DOMMatrix = class { };
+}
+if (typeof global.Path2D === 'undefined') {
+    global.Path2D = class { };
+}
 
 dotenv.config();
 
