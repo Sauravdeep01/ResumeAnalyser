@@ -20,6 +20,21 @@ connectDB();
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/resume', require('./routes/resumeRoutes'));
 
-const PORT = process.env.PORT || 5000;
+// Root route for status check
+app.get('/', (req, res) => {
+    res.json({ message: 'AI Resume Scanner API is running...' });
+});
 
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+});
+
+const PORT = process.env.PORT || 5001;
+
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+}
+
+module.exports = app;
