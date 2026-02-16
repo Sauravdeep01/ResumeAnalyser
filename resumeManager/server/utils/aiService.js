@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
-const { PDFParse } = require('pdf-parse');
+// Standard pdf-parse import for better compatibility
+const pdf = require('pdf-parse');
 
 // Initialize AI
 const getAIInstance = () => {
@@ -17,17 +18,16 @@ exports.extractTextFromPDF = async (filePath) => {
         console.log(`Extracting text from: ${filePath}`);
         const dataBuffer = fs.readFileSync(filePath);
 
-        // Use the PDFParse class pattern found in this environment
-        const parser = new PDFParse({ data: dataBuffer });
-        const result = await parser.getText();
+        // Standard pdf-parse usage (works as a function)
+        const data = await pdf(dataBuffer);
 
-        if (!result || !result.text) {
+        if (!data || !data.text) {
             console.warn("PDF extraction returned no text.");
             return "Empty resume content.";
         }
 
-        console.log(`Successfully extracted ${result.text.length} characters.`);
-        return result.text;
+        console.log(`Successfully extracted ${data.text.length} characters.`);
+        return data.text;
     } catch (error) {
         console.error('Error extracting text from PDF:', error);
         return "Error extracting text from PDF.";
@@ -43,8 +43,8 @@ exports.analyzeResume = async (resumeText, jobDescription) => {
     }
 
     try {
-        // Use gemini-2.0-flash
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        // Use gemini-2.0-flash as requested
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `
             You are an expert Resume Analyst and ATS (Applicant Tracking System) simulator.
@@ -57,17 +57,15 @@ exports.analyzeResume = async (resumeText, jobDescription) => {
             Job Description:
             "${jobDescription}"
             
-            Provide a detailed analysis in JSON format with the following structure:
+            Provide a detailed analysis in JSON format. Return ONLY the raw JSON string. Structure:
             {
                 "atsScore": (0-100 score),
                 "keywordMatch": (0-100 score),
-                "missingKeywords": ["list", "of", "missing", "keywords"],
-                "formattingIssues": ["list", "of", "formatting", "concerns"],
-                "improvements": ["list", "of", "actionable", "suggestions"],
-                "summary": "Professional summary of the resume."
+                "missingKeywords": ["list"],
+                "formattingIssues": ["list"],
+                "improvements": ["list"],
+                "summary": "Professional summary."
             }
-            
-            Return ONLY the raw JSON string.
         `;
 
         console.log("Sending prompt to Gemini (gemini-2.0-flash)...");
@@ -75,9 +73,6 @@ exports.analyzeResume = async (resumeText, jobDescription) => {
         const response = await result.response;
         const text = response.text();
 
-        console.log("Received AI response. Parsing...");
-
-        // Extract JSON from response
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
             throw new Error("No valid JSON found in AI response");
