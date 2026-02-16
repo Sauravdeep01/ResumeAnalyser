@@ -4,6 +4,7 @@ const Resume = require('../models/Resume');
 const Activity = require('../models/Activity');
 const aiService = require('../utils/aiService');
 const { validationResult } = require('express-validator');
+const connectDB = require('../config/db');
 
 // Create a new resume
 exports.createResume = async (req, res) => {
@@ -15,6 +16,7 @@ exports.createResume = async (req, res) => {
     const { title, jobRole, status, skills, content, atsScore, suggestions } = req.body;
 
     try {
+        await connectDB();
         const newResume = new Resume({
             user: req.user.id,
             title,
@@ -45,6 +47,7 @@ exports.createResume = async (req, res) => {
 // Get all resumes with filtering, sorting, and search
 exports.getResumes = async (req, res) => {
     try {
+        await connectDB();
         let query = { user: req.user.id };
 
         // Search by title or job role
@@ -79,6 +82,7 @@ exports.getResumes = async (req, res) => {
 // Get single resume by ID
 exports.getResumeById = async (req, res) => {
     try {
+        await connectDB();
         const resume = await Resume.findById(req.params.id);
 
         if (!resume) {
@@ -113,6 +117,7 @@ exports.updateResume = async (req, res) => {
     if (suggestions) resumeFields.suggestions = suggestions;
 
     try {
+        await connectDB();
         let resume = await Resume.findById(req.params.id);
 
         if (!resume) return res.status(404).json({ msg: 'Resume not found' });
@@ -144,6 +149,7 @@ exports.updateResume = async (req, res) => {
 // Delete resume
 exports.deleteResume = async (req, res) => {
     try {
+        await connectDB();
         const resume = await Resume.findById(req.params.id);
 
         if (!resume) {
@@ -175,6 +181,7 @@ exports.deleteResume = async (req, res) => {
 // Get dashboard stats
 exports.dashboardStats = async (req, res) => {
     try {
+        await connectDB();
         const totalResumes = await Resume.countDocuments({ user: req.user.id });
 
         const statusDistribution = await Resume.aggregate([
@@ -217,6 +224,7 @@ exports.dashboardStats = async (req, res) => {
 // Upload and analyze resume
 exports.uploadResume = async (req, res) => {
     try {
+        await connectDB();
         if (!req.file) {
             return res.status(400).json({ msg: 'No file uploaded' });
         }

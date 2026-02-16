@@ -2,11 +2,12 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
 const mongoose = require('mongoose');
+const connectDB = require('../config/db');
 
 exports.register = async (req, res) => {
     try {
+        await connectDB();
         if (mongoose.connection.readyState !== 1) {
             return res.status(500).json({ msg: 'Database not connected. Please check MONGO_URI.' });
         }
@@ -38,6 +39,7 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
+        await connectDB();
         if (mongoose.connection.readyState !== 1) {
             return res.status(500).json({ msg: 'Database not connected. Please check MONGO_URI.' });
         }
