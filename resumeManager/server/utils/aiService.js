@@ -33,7 +33,7 @@ exports.analyzeResume = async (resumeText, jobDescription) => {
     if (!genAI) return getMockResponse();
 
     // List of models to try in order of preference
-    const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"];
+    const modelsToTry = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-pro"];
     let lastError = null;
 
     for (const modelName of modelsToTry) {
